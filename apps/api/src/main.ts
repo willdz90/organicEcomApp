@@ -15,6 +15,8 @@ async function bootstrap() {
     'http://localhost:5173',
     'http://localhost:3000',
     'https://organic-ecom-app-client.vercel.app',
+    // Versión actual con hash que te está saliendo en el error
+    'https://organic-ecom-app-client-g1g228o3x-willdz90s-projects.vercel.app',
   ];
 
   app.enableCors({
