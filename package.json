@@ -1,0 +1,14 @@
+{
+  "name": "organic-ecom-monorepo",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "pnpm -C apps/api start:dev & pnpm -C apps/web dev",
+    "dev:api": "pnpm -C apps/api start:dev",
+    "dev:web": "pnpm -C apps/web dev",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down -v"
+  }
+}

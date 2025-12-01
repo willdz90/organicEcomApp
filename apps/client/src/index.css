@@ -1,0 +1,78 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ==========
+   Tokens globales
+   ========== */
+
+:root {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  /* Modo general: app oscura con cards claras */
+  color-scheme: light;
+  color: #0f172a;          /* texto por defecto */
+  background-color: #020617; /* fondo global (slate-950) */
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ==========
+   Layout base
+   ========== */
+
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+/* No centramos nada aquí.
+   Todo el layout se controla con Tailwind en los componentes. */
+
+/* ==========
+   Elementos básicos
+   ========== */
+
+a {
+  font-weight: 500;
+  color: #22c55e; /* emerald-500 */
+  text-decoration: none;
+}
+
+a:hover {
+  color: #4ade80; /* emerald-400 */
+}
+
+button {
+  font: inherit;
+  border: none;
+  background: none;
+}
+
+/* Si quieres que los botones tengan borde redondeado y padding por defecto,
+   mejor haz un componente <Button> reutilizable o usa utilidades Tailwind,
+   no lo fuerces aquí. */
+
+/* ==========
+   Helper opcional para el shell de la app
+   (por si quieres usarla en AppLayout)
+   ========== */
+
+.app-shell {
+  @apply min-h-screen bg-slate-950 text-slate-50;
+}
+

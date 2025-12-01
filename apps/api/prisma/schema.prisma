@@ -1,0 +1,189 @@
+// apps/api/prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                 String          @id @default(cuid())
+  email              String          @unique
+  password           String
+  role               Role            @default(VIEWER)
+  plan               Plan            @default(FREE)
+  isActive           Boolean         @default(true)
+  dailyAnalysisCount Int             @default(0)
+  lastAnalysisAt     DateTime?
+  preferences        UserPreference?
+  ratings            Rating[]
+
+  // 🔎 Auditoría de productos
+  createdProducts   Product[] @relation("CreatedProducts")
+  updatedProducts   Product[] @relation("UpdatedProducts")
+  publishedProducts Product[] @relation("PublishedProducts")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model UserPreference {
+  id           String @id @default(cuid())
+  user         User   @relation(fields: [userId], references: [id])
+  userId       String @unique
+  theme        String @default("light")
+  savedFilters Json?
+  tableColumns Json?
+}
+
+enum Role {
+  ADMIN
+  ANALYST
+  VIEWER
+  DATA_ENTRY
+}
+
+enum Plan {
+  FREE
+  PRO
+  ENTERPRISE
+}
+
+model Category {
+  id       String    @id @default(cuid())
+  name     String    @unique
+  slug     String    @unique
+  products Product[]
+}
+
+model Tag {
+  id       String       @id @default(cuid())
+  name     String       @unique
+  products ProductTag[]
+}
+
+model ProductTag {
+  product   Product @relation(fields: [productId], references: [id])
+  productId String
+  tag       Tag     @relation(fields: [tagId], references: [id])
+  tagId     String
+
+  @@id([productId, tagId])
+}
+
+enum ProductStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model Product {
+  id          String  @id @default(cuid())
+  title       String
+  description String?
+
+  // 🔹 Categoría dinámica (relación con Category)
+  category   Category? @relation(fields: [categoryId], references: [id])
+  categoryId String?
+
+  // 🔹 Varios grupos de país dinámicos
+  countryGroups String[] @default([])
+
+  cost      Decimal? @db.Decimal(10, 2)
+  sellPrice Decimal? @db.Decimal(10, 2)
+  marginPct Decimal? @db.Decimal(5, 2)
+
+  images       Json?
+  supplierUrls String[]
+  socialUrls   String[]
+
+  // Copys asistidos
+  whyGood         String?
+  filmingApproach String?
+  marketingAngles String?
+
+  status        ProductStatus @default(DRAFT)
+  publishedAt   DateTime?
+  publishedBy   User?         @relation("PublishedProducts", fields: [publishedById], references: [id])
+  publishedById String?
+
+  // 🔎 Auditoría
+  createdBy   User?   @relation("CreatedProducts", fields: [createdById], references: [id])
+  createdById String?
+
+  updatedBy   User?   @relation("UpdatedProducts", fields: [updatedById], references: [id])
+  updatedById String?
+
+  // ⭐ Rating agregado (promedio + conteo)
+  ratingAvg   Decimal @default(0) @db.Decimal(3, 2)
+  ratingCount Int     @default(0)
+
+  tags       ProductTag[]
+  mediaLinks MediaLink[]
+  analyses   Analysis[]
+
+  ratings Rating[]
+
+  metrics   Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([title])
+  @@index([status])
+  @@index([createdAt])
+}
+
+enum MediaType {
+  TIKTOK
+  REELS
+  YOUTUBE
+  OTHER
+}
+
+model MediaLink {
+  id         String    @id @default(cuid())
+  product    Product   @relation(fields: [productId], references: [id])
+  productId  String
+  type       MediaType
+  url        String
+  engagement Json?
+}
+
+enum Verdict {
+  viable
+  no_viable
+  condicionado
+}
+
+model Analysis {
+  id              String   @id @default(cuid())
+  product         Product  @relation(fields: [productId], references: [id])
+  productId       String
+  model           String
+  promptVersion   String
+  viabilityScore  Int
+  verdict         Verdict
+  whyGood         String?
+  filmingIdeas    String?
+  marketingAngles String?
+  riskNotes       String?
+  priceSuggestion Decimal? @db.Decimal(10, 2)
+  usage           Json? // tokens/costo
+  raw             Json? // respuesta completa del LLM
+  createdAt       DateTime @default(now())
+}
+
+model Rating {
+  id        String  @id @default(cuid())
+  user      User    @relation(fields: [userId], references: [id])
+  userId    String
+  product   Product @relation(fields: [productId], references: [id])
+  productId String
+  score     Int
+  note      String?
+
+  @@unique([userId, productId])
+}
