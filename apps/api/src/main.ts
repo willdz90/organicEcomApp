@@ -9,15 +9,36 @@ async function bootstrap() {
 
   app.use(cookieParser());
 
+  // 🔹 Orígenes permitidos para CORS
+  // Siempre permitimos localhost para desarrollo
+  const localOrigins = [
+    'http://localhost:5173',
+    'http://localhost:3000',
+  ];
+
+  // 🔹 En producción añadimos el dominio del frontend desde env
+  // Ejemplo en Vercel (API): FRONTEND_URL=https://tu-frontend.vercel.app
+  const envOrigin = process.env.FRONTEND_URL
+    ? [process.env.FRONTEND_URL]
+    : [];
+
+  const allowedOrigins = [...localOrigins, ...envOrigin];
+
   app.enableCors({
-    origin: ['http://localhost:5173', 'http://localhost:3000'],
+    origin: allowedOrigins,
     credentials: true,
   });
 
-    // ✅ Validación global
-  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+  // ✅ Validación global
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      transform: true,
+    }),
+  );
 
-  app.setGlobalPrefix('api'); // tus rutas serán /api/...
+  // 🔹 Prefijo global para la API: /api/...
+  app.setGlobalPrefix('api');
 
   // Swagger
   const config = new DocumentBuilder()
@@ -30,9 +51,10 @@ async function bootstrap() {
 
   const port = process.env.PORT ? Number(process.env.PORT) : 4000;
   await app.listen(port);
+
+  console.log('Allowed CORS origins:', allowedOrigins);
   console.log(`API running on http://localhost:${port}/api`);
   console.log(`Swagger on http://localhost:${port}/api/docs`);
 }
-
 
 bootstrap();
