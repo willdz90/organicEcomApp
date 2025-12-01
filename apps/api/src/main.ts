@@ -1,3 +1,4 @@
+// apps/api/src/main.ts
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
@@ -9,24 +10,31 @@ async function bootstrap() {
 
   app.use(cookieParser());
 
-  // 🔹 Orígenes permitidos para CORS
-  // Siempre permitimos localhost para desarrollo
-  const localOrigins = [
+  // 🔹 Orígenes permitidos de forma explícita
+  const allowedOrigins = [
     'http://localhost:5173',
     'http://localhost:3000',
+    'https://organic-ecom-app-client.vercel.app',
   ];
 
-  // 🔹 En producción añadimos el dominio del frontend desde env
-  // Ejemplo en Vercel (API): FRONTEND_URL=https://tu-frontend.vercel.app
-  const envOrigin = process.env.FRONTEND_URL
-    ? [process.env.FRONTEND_URL]
-    : [];
-
-  const allowedOrigins = [...localOrigins, ...envOrigin];
-
   app.enableCors({
-    origin: allowedOrigins,
+    origin: (origin, callback) => {
+      // Permitir peticiones sin origin (Postman, curl, etc.)
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      // 👀 Log para ver qué está llegando en los logs de Vercel
+      console.warn('[CORS] Origin no permitido:', origin);
+      return callback(new Error('Not allowed by CORS'), false);
+    },
     credentials: true,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    allowedHeaders: 'Content-Type, Accept, Authorization, X-Requested-With',
   });
 
   // ✅ Validación global
@@ -37,7 +45,7 @@ async function bootstrap() {
     }),
   );
 
-  // 🔹 Prefijo global para la API: /api/...
+  // Prefijo global de la API
   app.setGlobalPrefix('api');
 
   // Swagger
@@ -46,6 +54,7 @@ async function bootstrap() {
     .setDescription('API para marketplace y análisis de productos')
     .setVersion('1.0.0')
     .build();
+
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
 
