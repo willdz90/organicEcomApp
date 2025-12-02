@@ -74,10 +74,11 @@ export class AuthController {
   private setRefreshCookie(res: Response, token: string) {
     res.cookie('refresh_token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      secure: true,              // siempre true en Vercel (HTTPS)
+      sameSite: 'none',          // permite cookie en cross-site XHR
       path: '/api/auth',
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
   }
+
 }
