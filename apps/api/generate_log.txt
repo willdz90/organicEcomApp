@@ -1,0 +1,44 @@
+Environment variables loaded from .env
+Prisma schema loaded from prisma\schema.prisma
+Error: Prisma schema validation - (get-dmmf wasm)
+Error code: P1012
+error: Error validating field `user` in model `UserPreference`: The relation field `user` on model `UserPreference` is missing an opposite relation field on the model `User`. Either run `prisma format` or add it manually.
+  -->  prisma\schema.prisma:34
+   | 
+33 |   id           String @id @default(cuid())
+34 |   user         User   @relation(fields: [userId], references: [id])
+35 |   userId       String @unique
+   | 
+error: Error validating field `publishedBy` in model `Product`: The relation field `publishedBy` on model `Product` is missing an opposite relation field on the model `User`. Either run `prisma format` or add it manually.
+  -->  prisma\schema.prisma:109
+   | 
+108 |   publishedAt   DateTime?
+109 |   publishedBy   User?         @relation("PublishedProducts", fields: [publishedById], references: [id])
+110 |   publishedById String?
+   | 
+error: Error validating field `createdBy` in model `Product`: The relation field `createdBy` on model `Product` is missing an opposite relation field on the model `User`. Either run `prisma format` or add it manually.
+  -->  prisma\schema.prisma:113
+   | 
+112 |   // ­ƒöÄ Auditor├¡a
+113 |   createdBy   User?   @relation("CreatedProducts", fields: [createdById], references: [id])
+114 |   createdById String?
+   | 
+error: Error validating field `updatedBy` in model `Product`: The relation field `updatedBy` on model `Product` is missing an opposite relation field on the model `User`. Either run `prisma format` or add it manually.
+  -->  prisma\schema.prisma:116
+   | 
+115 | 
+116 |   updatedBy   User?   @relation("UpdatedProducts", fields: [updatedById], references: [id])
+117 |   updatedById String?
+   | 
+error: Error validating field `user` in model `Rating`: The relation field `user` on model `Rating` is missing an opposite relation field on the model `User`. Either run `prisma format` or add it manually.
+  -->  prisma\schema.prisma:180
+   | 
+179 |   id        String  @id @default(cuid())
+180 |   user      User    @relation(fields: [userId], references: [id])
+181 |   userId    String
+   | 
+
+Validation Error Count: 5
+[Context: getDmmf]
+
+Prisma CLI Version : 6.18.0

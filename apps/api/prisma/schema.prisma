@@ -10,33 +10,41 @@ datasource db {
 }
 
 model User {
-  id                 String          @id @default(cuid())
-  email              String          @unique
+  id                 String   @id @default(cuid())
+  email              String   @unique
   password           String
-  role               Role            @default(VIEWER)
-  plan               Plan            @default(FREE)
-  isActive           Boolean         @default(true)
-  dailyAnalysisCount Int             @default(0)
+  role               Role     @default(VIEWER)
+  plan               Plan     @default(FREE)
+
+  // 🔹 Campos nuevos
+  name               String?
+  country            String?
+  timezone           String?
+
+  isActive           Boolean  @default(true)
+  dailyAnalysisCount Int      @default(0)
   lastAnalysisAt     DateTime?
-  preferences        UserPreference?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  // Relaciones inversas
+  preference         UserPreference?
+  publishedProducts  Product[]       @relation("PublishedProducts")
+  createdProducts    Product[]       @relation("CreatedProducts")
+  updatedProducts    Product[]       @relation("UpdatedProducts")
   ratings            Rating[]
-
-  // 🔎 Auditoría de productos
-  createdProducts   Product[] @relation("CreatedProducts")
-  updatedProducts   Product[] @relation("UpdatedProducts")
-  publishedProducts Product[] @relation("PublishedProducts")
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 }
 
+
 model UserPreference {
-  id           String @id @default(cuid())
-  user         User   @relation(fields: [userId], references: [id])
-  userId       String @unique
-  theme        String @default("light")
-  savedFilters Json?
-  tableColumns Json?
+  id               String @id @default(cuid())
+  user             User   @relation(fields: [userId], references: [id])
+  userId           String @unique
+  theme            String @default("light")
+  savedFilters     Json?
+  tableColumns     Json?
+  dashboardLayout  Json?
+  dashboardWidgets Json?
 }
 
 enum Role {
@@ -44,6 +52,8 @@ enum Role {
   ANALYST
   VIEWER
   DATA_ENTRY
+  AUDITOR
+  IT_SUPPORT
 }
 
 enum Plan {

@@ -24,14 +24,15 @@ import { UpdateProductDto } from './dtos/update-product.dto'; // ⬅️ AÑADE E
 
 @Controller('products')
 export class ProductsController {
-  constructor(private readonly service: ProductsService) {}
+  constructor(private readonly service: ProductsService) { }
 
+  // 🟢 Endpoint para el Marketplace (REQUIERE login)
   // 🟢 Endpoint para el Marketplace (REQUIERE login)
   // - Cualquier rol autenticado puede verlo (incluye VIEWER)
   // - Siempre devuelve SOLO productos publicados
   @Get('marketplace')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.DATA_ENTRY, Role.ANALYST, Role.VIEWER)
+  @Roles(Role.ADMIN, Role.DATA_ENTRY, Role.ANALYST, Role.VIEWER, Role.AUDITOR)
   listMarketplace(@Query() query: FindProductsQuery) {
     const merged: FindProductsQuery = {
       ...query,
@@ -41,20 +42,29 @@ export class ProductsController {
   }
 
   // 🔵 Listar productos internos (panel)
-  // Solo roles "operativos" (no VIEWER)
+  // Solo roles "operativos" (no VIEWER) + AUDITOR
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.DATA_ENTRY, Role.ANALYST)
+  @Roles(Role.ADMIN, Role.DATA_ENTRY, Role.ANALYST, Role.AUDITOR)
   list(@Query() query: FindProductsQuery) {
     return this.service.findMany(query);
   }
 
-  // 🔵 Detalle interno de un producto
+  // 🔵 Detalle de producto (Interno + Marketplace)
   @Get(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.DATA_ENTRY, Role.ANALYST)
-  detail(@Param('id') id: string) {
-    return this.service.findOne(id);
+  @Roles(Role.ADMIN, Role.DATA_ENTRY, Role.ANALYST, Role.VIEWER, Role.AUDITOR)
+  async detail(@Param('id') id: string, @Req() req: Request) {
+    const product = await this.service.findOne(id);
+    if (!product) return null;
+
+    const user = req.user as any;
+    // Si es alumno (VIEWER), solo puede ver si está PUBLISHED
+    if (user.role === Role.VIEWER && product.status !== ProductStatus.PUBLISHED) {
+      // Retornar null o lanzar error simula 404/403
+      return null;
+    }
+    return product;
   }
 
   // 🟣 Crear producto — ADMIN / DATA_ENTRY

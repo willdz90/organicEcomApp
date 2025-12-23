@@ -28,7 +28,12 @@ api.interceptors.response.use(
     const original = error.config as any;
 
     // Si el access token expiró, intentamos refrescar UNA sola vez
-    if (error.response?.status === 401 && !original?._retry) {
+    // IMPORTANTE: Evitar bucle infinito si el refresh mismo falla (url termina en /auth/refresh)
+    if (
+      error.response?.status === 401 &&
+      !original._retry &&
+      !original.url?.includes("/auth/refresh")
+    ) {
       original._retry = true;
       try {
         const refreshResponse = await api.post("/auth/refresh");

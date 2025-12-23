@@ -1,0 +1,21 @@
+Prisma schema loaded from prisma\schema.prisma
+
+Error: Prisma schema validation - (validate wasm)
+Error code: P1012
+error: Field "Product" is already defined on model "User".
+  -->  prisma\schema.prisma:31
+   | 
+30 |   Product            Product[]
+31 |   Product            Product[]
+   | 
+error: Field "Product" is already defined on model "User".
+  -->  prisma\schema.prisma:32
+   | 
+31 |   Product            Product[]
+32 |   Product            Product[]
+   | 
+
+Validation Error Count: 2
+[Context: validate]
+
+Prisma CLI Version : 6.18.0

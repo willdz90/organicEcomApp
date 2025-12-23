@@ -6,16 +6,17 @@ const prisma = new PrismaClient();
 async function main() {
   const email = 'admin@organicecom.com';
 
-  const existing = await prisma.user.findUnique({ where: { email } });
-  if (existing) {
-    console.log('Admin ya existe');
-    return;
-  }
+  const password = await bcrypt.hash('WilldzAdmin2025!', 10);
 
-  const password = await bcrypt.hash('Admin123$', 10);
-
-  await prisma.user.create({
-    data: {
+  await prisma.user.upsert({
+    where: { email },
+    update: {
+      password,
+      isActive: true,
+      role: Role.ADMIN,
+      plan: Plan.ENTERPRISE,
+    },
+    create: {
       email,
       password,
       role: Role.ADMIN,
@@ -24,7 +25,7 @@ async function main() {
     },
   });
 
-  console.log(`✅ Admin creado: ${email} / Admin123$`);
+  console.log(`✅ Admin actualizado/creado: ${email} / WilldzAdmin2025!`);
 }
 
 main()

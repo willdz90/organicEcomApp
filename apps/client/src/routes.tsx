@@ -7,9 +7,15 @@ import Dashboard from "./pages/Dashboard";
 import Marketplace from "./pages/Marketplace";
 import AdminProducts from "./pages/AdminProducts";
 import AdminProductCreate from "./pages/AdminProductCreate";
+import AdminProductEdit from "./pages/AdminProductEdit";
 import { useAuth } from "./auth/useAuth";
 import type { ReactElement } from "react";
 import { AppLayout } from "./layout/AppLayout";
+import AccountPage from "./pages/AccountPage";
+import ProductDetailPage from "./pages/ProductDetailPage";
+import AdminUsersPage from "./pages/AdminUsersPage";
+import { AnalyticsDetail } from "./pages/AnalyticsDetail";
+
 
 
 function PrivateRoute({ children }: { children: ReactElement }) {
@@ -40,45 +46,25 @@ export default function AppRoutes() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
 
-          {/* Rutas protegidas */}
-          <Route
-            path="/dashboard"
-            element={
-              <PrivateRoute>
-                <Dashboard />
-              </PrivateRoute>
-            }
-          />
+          {/* Rutas protegidas (con Layout) */}
+          <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+          <Route path="/marketplace" element={<PrivateRoute><Marketplace /></PrivateRoute>} />
 
-          <Route
-            path="/marketplace"
-            element={
-              <PrivateRoute>
-                <Marketplace />
-              </PrivateRoute>
-            }
-          />
+          {/* Nueva ruta de detalle */}
+          <Route path="/products/:id" element={<PrivateRoute><ProductDetailPage /></PrivateRoute>} />
 
-          <Route
-            path="/admin/products"
-            element={
-              <PrivateRoute>
-                <AdminProducts />
-              </PrivateRoute>
-            }
-          />
+          {/* Admin */}
+          <Route path="/admin/products" element={<PrivateRoute><AdminProducts /></PrivateRoute>} />
+          <Route path="/admin/products/new" element={<PrivateRoute><AdminProductCreate /></PrivateRoute>} />
+          <Route path="/admin/products/:id/edit" element={<PrivateRoute><AdminProductEdit /></PrivateRoute>} />
+          <Route path="/admin/users" element={<PrivateRoute><AdminUsersPage /></PrivateRoute>} />
+          <Route path="/admin/analytics/detail/:id" element={<PrivateRoute><AnalyticsDetail /></PrivateRoute>} />
 
-          <Route
-            path="/admin/products/new"
-            element={
-              <PrivateRoute>
-                <AdminProductCreate />
-              </PrivateRoute>
-            }
-          />
+          {/* Cuenta */}
+          <Route path="/account" element={<PrivateRoute><AccountPage /></PrivateRoute>} />
 
           {/* Fallback */}
-          <Route path="*" element={<Navigate to="/marketplace" replace />} />
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>

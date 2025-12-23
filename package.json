@@ -5,9 +5,9 @@
     "apps/*"
   ],
   "scripts": {
-    "dev": "pnpm -C apps/api start:dev & pnpm -C apps/web dev",
+    "dev": "concurrently \"pnpm -C apps/api start:dev\" \"pnpm -C apps/client dev\"",
     "dev:api": "pnpm -C apps/api start:dev",
-    "dev:web": "pnpm -C apps/web dev",
+    "dev:web": "pnpm -C apps/client dev",
     "db:up": "docker compose up -d",
     "db:down": "docker compose down -v"
   }

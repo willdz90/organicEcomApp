@@ -76,3 +76,10 @@ button {
   @apply min-h-screen bg-slate-950 text-slate-50;
 }
 
+/* Fix for black rectangle / focus ring on charts */
+.recharts-wrapper:focus,
+.recharts-surface:focus,
+.recharts-layer:focus {
+  outline: none !important;
+}
+
