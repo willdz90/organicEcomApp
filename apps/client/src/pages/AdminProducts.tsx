@@ -18,6 +18,7 @@ import {
   Image as ImageIcon
 } from "lucide-react";
 import { COUNTRY_GROUP_OPTIONS, type CountryGroup } from "../config/productConfig";
+import { getCategoryPath } from "../config/categories";
 
 type ProductStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
 

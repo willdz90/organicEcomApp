@@ -10,31 +10,30 @@ datasource db {
 }
 
 model User {
-  id                 String   @id @default(cuid())
-  email              String   @unique
-  password           String
-  role               Role     @default(VIEWER)
-  plan               Plan     @default(FREE)
+  id       String @id @default(cuid())
+  email    String @unique
+  password String
+  role     Role   @default(VIEWER)
+  plan     Plan   @default(FREE)
 
   // 🔹 Campos nuevos
-  name               String?
-  country            String?
-  timezone           String?
+  name     String?
+  country  String?
+  timezone String?
 
-  isActive           Boolean  @default(true)
-  dailyAnalysisCount Int      @default(0)
+  isActive           Boolean   @default(true)
+  dailyAnalysisCount Int       @default(0)
   lastAnalysisAt     DateTime?
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 
   // Relaciones inversas
-  preference         UserPreference?
-  publishedProducts  Product[]       @relation("PublishedProducts")
-  createdProducts    Product[]       @relation("CreatedProducts")
-  updatedProducts    Product[]       @relation("UpdatedProducts")
-  ratings            Rating[]
+  preference        UserPreference?
+  publishedProducts Product[]       @relation("PublishedProducts")
+  createdProducts   Product[]       @relation("CreatedProducts")
+  updatedProducts   Product[]       @relation("UpdatedProducts")
+  ratings           Rating[]
 }
-
 
 model UserPreference {
   id               String @id @default(cuid())
@@ -63,10 +62,30 @@ enum Plan {
 }
 
 model Category {
-  id       String    @id @default(cuid())
-  name     String    @unique
-  slug     String    @unique
+  id   String  @id @default(cuid())
+  name String
+  slug String
+  icon String? // Emoji o nombre de icono
+
+  // Jerarquía
+  parent   Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  parentId String?
+  children Category[] @relation("CategoryHierarchy")
+
+  // Metadata
+  description String?
+  order       Int     @default(0)
+  isActive    Boolean @default(true)
+
+  // Relaciones
   products Product[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([slug, parentId])
+  @@index([parentId])
+  @@index([isActive, order])
 }
 
 model Tag {

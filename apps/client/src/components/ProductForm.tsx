@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-    CATEGORY_OPTIONS,
     COUNTRY_GROUP_OPTIONS,
     type CountryGroup,
 } from "../config/productConfig";
+import { CategorySelector } from "./CategorySelector";
 import {
     Box,
     Trash2,
@@ -293,8 +293,8 @@ export default function ProductForm({
                                         value={tmpSupplierUrl}
                                         onChange={(e) => setTmpSupplierUrl(e.target.value)}
                                     />
-                                    <button type="button" onClick={() => addUrl("supplierUrls", tmpSupplierUrl, setTmpSupplierUrl)} className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition">
-                                        <Plus size={16} />
+                                    <button type="button" onClick={() => addUrl("supplierUrls", tmpSupplierUrl, setTmpSupplierUrl)} className="shrink-0 p-2 rounded-lg bg-indigo-100 hover:bg-indigo-200 text-indigo-600 transition-all">
+                                        <Plus size={18} strokeWidth={2.5} />
                                     </button>
                                 </div>
                                 <UrlList urls={form.supplierUrls} onRemove={(u) => removeUrl("supplierUrls", u)} />
@@ -310,8 +310,8 @@ export default function ProductForm({
                                         value={tmpSocialUrl}
                                         onChange={(e) => setTmpSocialUrl(e.target.value)}
                                     />
-                                    <button type="button" onClick={() => addUrl("socialUrls", tmpSocialUrl, setTmpSocialUrl)} className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition">
-                                        <Plus size={16} />
+                                    <button type="button" onClick={() => addUrl("socialUrls", tmpSocialUrl, setTmpSocialUrl)} className="shrink-0 p-2 rounded-lg bg-indigo-100 hover:bg-indigo-200 text-indigo-600 transition-all">
+                                        <Plus size={18} strokeWidth={2.5} />
                                     </button>
                                 </div>
                                 <UrlList urls={form.socialUrls} onRemove={(u) => removeUrl("socialUrls", u)} />
@@ -327,8 +327,8 @@ export default function ProductForm({
                                         value={tmpImageUrl}
                                         onChange={(e) => setTmpImageUrl(e.target.value)}
                                     />
-                                    <button type="button" onClick={() => addUrl("images", tmpImageUrl, setTmpImageUrl)} className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition">
-                                        <Plus size={16} />
+                                    <button type="button" onClick={() => addUrl("images", tmpImageUrl, setTmpImageUrl)} className="shrink-0 p-2 rounded-lg bg-indigo-100 hover:bg-indigo-200 text-indigo-600 transition-all">
+                                        <Plus size={18} strokeWidth={2.5} />
                                     </button>
                                 </div>
                                 <UrlList urls={form.images} onRemove={(u) => removeUrl("images", u)} />
@@ -360,18 +360,12 @@ export default function ProductForm({
                         </div>
 
                         <div>
-                            <label className="block text-xs font-medium text-slate-700 mb-1.5 ml-1">Categoría</label>
-                            <select
-                                name="category"
-                                className="w-full px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                            <label className="block text-xs font-medium text-slate-700 mb-1.5 ml-1">Categoría *</label>
+                            <CategorySelector
                                 value={form.category}
-                                onChange={handleBasicChange}
-                            >
-                                <option value="">Seleccionar...</option>
-                                {CATEGORY_OPTIONS.map((cat) => (
-                                    <option key={cat} value={cat}>{cat}</option>
-                                ))}
-                            </select>
+                                onChange={(slug) => setForm(prev => ({ ...prev, category: slug }))}
+                                required
+                            />
                         </div>
                     </div>
 

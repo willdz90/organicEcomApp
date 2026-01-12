@@ -6,6 +6,7 @@ import {
   COUNTRY_GROUP_OPTIONS,
   type CountryGroup,
 } from "../config/productConfig";
+import { getCategoryPath } from "../config/categories";
 import { Search, ShoppingBag } from "lucide-react";
 
 interface Product {
@@ -76,7 +77,7 @@ function ProductCard({ product: p }: { product: Product }) {
         <div className="text-[10px] text-slate-400 font-medium tracking-wide uppercase mb-0.5 truncate">
           {p.countryGroups && p.countryGroups.length > 0
             ? p.countryGroups.map(c => c === 'COD_LATAM' ? 'LATAM' : c).join(" • ")
-            : (p.category?.name || "General")
+            : getCategoryPath(p.category?.slug)
           }
         </div>
 
