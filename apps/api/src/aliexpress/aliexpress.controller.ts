@@ -36,4 +36,35 @@ export class AliexpressController {
             count,
         };
     }
+
+    // Temporary endpoint for OAuth testing
+    @Get('callback')
+    async handleCallback(
+        @Query('code') code?: string,
+        @Query('state') state?: string,
+        @Query('error') error?: string,
+    ) {
+        if (error) {
+            return {
+                success: false,
+                error: error,
+                message: 'OAuth authorization failed'
+            };
+        }
+
+        if (!code) {
+            return {
+                success: false,
+                message: 'No authorization code received'
+            };
+        }
+
+        return {
+            success: true,
+            code: code,
+            state: state,
+            message: '✅ Authorization code received! Copy this code and use it in Postman to get your access token.',
+            nextStep: 'Use this code in Postman: POST https://api-sg.aliexpress.com/oauth/token'
+        };
+    }
 }
