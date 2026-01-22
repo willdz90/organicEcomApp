@@ -7,6 +7,7 @@ import {
     Settings,
     ShieldCheck,
     UserCircle,
+    ShoppingBag,
     type LucideIcon,
 } from "lucide-react";
 
@@ -35,6 +36,14 @@ export const NAVIGATION_CONFIG: NavItem[] = [
         path: "/marketplace",
         icon: Store,
         // IT_SUPPORT no necesita ver marketplace según doc, pero VIEWER/AUDITOR si
+        roles: ["ADMIN", "ANALYST", "DATA_ENTRY", "VIEWER", "AUDITOR"],
+        section: "General",
+    },
+    {
+        label: "AliExpress",
+        path: "/aliexpress",
+        icon: ShoppingBag,
+        // Todos pueden ver el catálogo de AliExpress
         roles: ["ADMIN", "ANALYST", "DATA_ENTRY", "VIEWER", "AUDITOR"],
         section: "General",
     },

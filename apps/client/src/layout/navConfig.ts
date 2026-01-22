@@ -1,6 +1,7 @@
 export function getNavItems(role?: string) {
   const base = [
     { label: "Marketplace", path: "/marketplace" },
+    { label: "AliExpress", path: "/aliexpress" },
   ];
 
   if (!role) return base;

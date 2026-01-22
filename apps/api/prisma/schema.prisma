@@ -156,6 +156,9 @@ model Product {
 
   ratings Rating[]
 
+  // Optional: Linked AliExpress product
+  aliexpressSource AliexpressProduct?
+
   metrics   Json?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -215,4 +218,63 @@ model Rating {
   note      String?
 
   @@unique([userId, productId])
+}
+
+// AliExpress Catalog - Separate from Product
+model AliexpressProduct {
+  id String @id @default(cuid())
+
+  // AliExpress IDs
+  aliexpressProductId String @unique
+  aliexpressUrl       String
+
+  // Basic Info
+  title       String
+  description String?  @db.Text
+  images      String[]
+
+  // Pricing
+  originalPrice Decimal  @db.Decimal(10, 2)
+  salePrice     Decimal? @db.Decimal(10, 2)
+  currency      String   @default("USD")
+
+  // Product Details
+  categoryPath   String?
+  brand          String?
+  specifications Json?
+
+  // Seller Info
+  sellerName   String?
+  sellerRating Decimal? @db.Decimal(3, 2)
+  sellerUrl    String?
+
+  // Stats
+  orders      Int     @default(0)
+  rating      Decimal @default(0) @db.Decimal(3, 2)
+  reviewCount Int     @default(0)
+
+  // Shipping
+  shippingInfo Json?
+  freeShipping Boolean @default(false)
+
+  // Metadata
+  rawData         Json?
+  lastSyncedAt    DateTime @updatedAt
+  firstImportedAt DateTime @default(now())
+
+  // Search & Filter
+  isAvailable Boolean  @default(true)
+  tags        String[]
+
+  // Optional: Link to Product if imported
+  importedProductId String?   @unique
+  importedProduct   Product?  @relation(fields: [importedProductId], references: [id])
+  importedAt        DateTime?
+
+  @@index([aliexpressProductId])
+  @@index([categoryPath])
+  @@index([orders])
+  @@index([rating])
+  @@index([firstImportedAt])
+  @@index([isAvailable])
 }
