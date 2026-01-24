@@ -1,4 +1,4 @@
-import { Controller, Get, Query, Param, Post } from '@nestjs/common';
+import { Controller, Get, Query, Param, Post, Body } from '@nestjs/common';
 import { AliexpressService } from './aliexpress.service';
 
 @Controller('aliexpress')
@@ -64,7 +64,31 @@ export class AliexpressController {
             code: code,
             state: state,
             message: '✅ Authorization code received! Copy this code and use it in Postman to get your access token.',
-            nextStep: 'Use this code in Postman: POST https://api-sg.aliexpress.com/oauth/token'
+            nextStep: 'Use this code in Postman: POST http://localhost:4000/api/aliexpress/exchange-token'
         };
+    }
+
+    // Helper endpoint to generate signature for OAuth token request
+    @Post('generate-token-signature')
+    async generateTokenSignature(@Body() body: {
+        code: string;
+        timestamp?: string;
+    }) {
+        const params = this.aliexpressService.prepareTokenRequestParams(
+            body.code,
+            body.timestamp
+        );
+
+        return {
+            params,
+            instructions: 'Use these params in Postman: POST https://api-sg.aliexpress.com/rest/auth/token/create',
+            note: 'All parameters including sign are ready to use'
+        };
+    }
+
+    // Exchange authorization code for access token (Production endpoint)
+    @Post('exchange-token')
+    async exchangeToken(@Body() body: { code: string }) {
+        return this.aliexpressService.exchangeCodeForToken(body.code);
     }
 }
