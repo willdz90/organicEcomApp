@@ -1,9 +1,9 @@
 
+
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 import { Prisma } from '@prisma/client';
 import { AliexpressApiClient } from './aliexpress-api.client';
-import * as crypto from 'crypto';
 
 @Injectable()
 export class AliexpressService {
@@ -14,6 +14,7 @@ export class AliexpressService {
 
     /**
      * Exchange authorization code for access token
+     * Delegates to API client which handles signature generation
      */
     async exchangeCodeForToken(code: string) {
         try {
@@ -34,57 +35,6 @@ export class AliexpressService {
                 message: 'Failed to exchange code for token'
             };
         }
-    }
-
-    /**
-     * Generate signature for AliExpress API requests
-     * Used for OAuth token exchange and API calls
-     */
-    generateSignature(params: Record<string, any>, appSecret: string): string {
-        // Sort parameters alphabetically
-        const sortedKeys = Object.keys(params).sort();
-
-        // Concatenate: appSecret + key1value1 + key2value2 + ... + appSecret
-        let signString = appSecret;
-        sortedKeys.forEach(key => {
-            if (params[key] !== undefined && params[key] !== null) {
-                signString += key + params[key];
-            }
-        });
-        signString += appSecret;
-
-        // Calculate HMAC-SHA256 and convert to uppercase hex
-        return crypto
-            .createHmac('sha256', appSecret)
-            .update(signString, 'utf8')
-            .digest('hex')
-            .toUpperCase();
-    }
-
-    /**
-     * Prepare signed parameters for OAuth token request
-     */
-    prepareTokenRequestParams(code: string, timestamp?: string) {
-        // Use provided timestamp or generate current time in milliseconds
-        const ts = timestamp || Date.now().toString();
-        const appKey = '525634';
-        const appSecret = '1RM7SSSS5FKeDV7qJqxc3Y6HGeE8Kr1b';
-
-        const params = {
-            code,
-            app_key: appKey,
-            timestamp: ts,
-            sign_method: 'sha256',
-            format: 'json',
-        };
-
-        const sign = this.generateSignature(params, appSecret);
-
-        return {
-            ...params,
-            app_secret: appSecret,
-            sign,
-        };
     }
 
     async searchProducts(query: string, filters?: {

@@ -68,23 +68,6 @@ export class AliexpressController {
         };
     }
 
-    // Helper endpoint to generate signature for OAuth token request
-    @Post('generate-token-signature')
-    async generateTokenSignature(@Body() body: {
-        code: string;
-        timestamp?: string;
-    }) {
-        const params = this.aliexpressService.prepareTokenRequestParams(
-            body.code,
-            body.timestamp
-        );
-
-        return {
-            params,
-            instructions: 'Use these params in Postman: POST https://api-sg.aliexpress.com/rest/auth/token/create',
-            note: 'All parameters including sign are ready to use'
-        };
-    }
 
     // Exchange authorization code for access token (Production endpoint)
     @Post('exchange-token')
