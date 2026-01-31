@@ -217,3 +217,15 @@ model Rating {
 
   @@unique([userId, productId])
 }
+
+model AliexpressToken {
+  id           String    @id @default(cuid())
+  userId       String?   @unique // Optional - for multi-user support in the future
+  accessToken  String
+  refreshToken String?   @db.Text
+  expiresAt    DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([expiresAt])
+}
