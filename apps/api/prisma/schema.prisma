@@ -33,6 +33,7 @@ model User {
   createdProducts   Product[]       @relation("CreatedProducts")
   updatedProducts   Product[]       @relation("UpdatedProducts")
   ratings           Rating[]
+  aliexpressToken   AliexpressToken?
 }
 
 model UserPreference {
@@ -277,4 +278,22 @@ model AliexpressProduct {
   @@index([rating])
   @@index([firstImportedAt])
   @@index([isAvailable])
+}
+
+// AliExpress OAuth Tokens
+model AliexpressToken {
+  id           String   @id @default(cuid())
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String   @unique
+
+  accessToken  String   @db.Text
+  refreshToken String   @db.Text
+  expiresAt    DateTime
+
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([expiresAt])
 }

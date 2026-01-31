@@ -16,6 +16,8 @@ import ProductDetailPage from "./pages/ProductDetailPage";
 import AdminUsersPage from "./pages/AdminUsersPage";
 import { AnalyticsDetail } from "./pages/AnalyticsDetail";
 import AliexpressProducts from "./pages/AliexpressProducts";
+import AliExpressConnect from "./pages/AliExpressConnect";
+import AliExpressCatalog from "./pages/AliExpressCatalog";
 
 
 
@@ -51,6 +53,8 @@ export default function AppRoutes() {
           <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
           <Route path="/marketplace" element={<PrivateRoute><Marketplace /></PrivateRoute>} />
           <Route path="/aliexpress" element={<PrivateRoute><AliexpressProducts /></PrivateRoute>} />
+          <Route path="/aliexpress/connect" element={<PrivateRoute><AliExpressConnect /></PrivateRoute>} />
+          <Route path="/aliexpress/catalog" element={<PrivateRoute><AliExpressCatalog /></PrivateRoute>} />
 
           {/* Nueva ruta de detalle */}
           <Route path="/products/:id" element={<PrivateRoute><ProductDetailPage /></PrivateRoute>} />
