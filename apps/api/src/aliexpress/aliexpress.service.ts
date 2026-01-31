@@ -59,15 +59,13 @@ export class AliexpressService {
 
         // Make HTTP request
         const url = `${this.apiUrl}${apiMethod}`;
-        this.logger.debug(`POST ${url}`);
+        this.logger.debug(`GET ${url}`);
         this.logger.debug(`Params: ${JSON.stringify(params)}`);
 
         try {
-            const response = await axios.post(url, null, {
+            // AliExpress requires GET request with parameters in URL
+            const response = await axios.get(url, {
                 params,
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
             });
 
             this.logger.log('Token exchange successful');
