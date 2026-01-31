@@ -50,6 +50,8 @@ export class AliexpressService {
             timestamp,
             sign_method: 'sha256',
             code, // Business parameter
+            grant_type: 'authorization_code', // Required
+            sp: 'ae', // Required for AliExpress
         };
 
         // Generate signature
@@ -69,6 +71,7 @@ export class AliexpressService {
             });
 
             this.logger.log('Token exchange successful');
+            this.logger.log(`Response: ${JSON.stringify(response.data)}`);
             const tokenData: TokenResponseDto = response.data;
 
             // Save token to database
@@ -76,7 +79,12 @@ export class AliexpressService {
 
             return tokenData;
         } catch (error: any) {
-            this.logger.error('Token exchange failed', error.response?.data || error.message);
+            this.logger.error('Token exchange failed');
+            this.logger.error(`Status: ${error.response?.status}`);
+            this.logger.error(`URL: ${url}`);
+            this.logger.error(`Params: ${JSON.stringify(params)}`);
+            this.logger.error(`Response data: ${JSON.stringify(error.response?.data)}`);
+            this.logger.error(`Error message: ${error.message}`);
             throw error;
         }
     }
