@@ -3,7 +3,7 @@ import type { Response } from 'express';
 import { AliexpressService } from './aliexpress.service';
 import type { CallbackQueryDto } from './dto/aliexpress-token.dto';
 
-@Controller('api/aliexpress')
+@Controller('aliexpress')
 export class AliexpressController {
     private readonly logger = new Logger(AliexpressController.name);
 
