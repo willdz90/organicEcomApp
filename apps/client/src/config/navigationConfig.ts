@@ -39,14 +39,7 @@ export const NAVIGATION_CONFIG: NavItem[] = [
         roles: ["ADMIN", "ANALYST", "DATA_ENTRY", "VIEWER", "AUDITOR"],
         section: "General",
     },
-    {
-        label: "AliExpress",
-        path: "/aliexpress",
-        icon: ShoppingBag,
-        // Todos pueden ver el catálogo de AliExpress
-        roles: ["ADMIN", "ANALYST", "DATA_ENTRY", "VIEWER", "AUDITOR"],
-        section: "General",
-    },
+
 
     // --- GESTIÓN (Roles operativos/admin/auditoría) ---
     {

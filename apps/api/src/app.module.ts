@@ -8,7 +8,6 @@ import { AuthModule } from './auth/auth.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { CategoriesModule } from './categories/categories.module';
 
-import { AliexpressModule } from './aliexpress/aliexpress.module';
 
 @Module({
   imports: [
@@ -22,7 +21,6 @@ import { AliexpressModule } from './aliexpress/aliexpress.module';
     CategoriesModule,
     AnalyticsModule,
     HealthModule,
-    AliexpressModule,
   ],
 })
 export class AppModule { }
