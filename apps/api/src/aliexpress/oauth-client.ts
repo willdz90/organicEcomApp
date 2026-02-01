@@ -37,7 +37,8 @@ export class AliExpressOAuth {
             simplify: true,
         };
 
-        const method = '/oauth/token';
+        // OP API uses method as part of URL path
+        const method = '/auth/token/create';
         const signature = this.generateSignature(params, method);
         params.sign = signature;
 
@@ -77,7 +78,7 @@ export class AliExpressOAuth {
             simplify: true,
         };
 
-        const method = '/oauth/token/refresh';
+        const method = '/auth/token/refresh';
         const signature = this.generateSignature(params, method);
         params.sign = signature;
 
