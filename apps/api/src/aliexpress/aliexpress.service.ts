@@ -1,15 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../database/prisma.service';
-import { createHmac } from 'crypto';
-import axios from 'axios';
-import { TokenResponseDto } from './dto/aliexpress-token.dto';
+import { AliExpressOAuth } from './oauth-client';
 
 @Injectable()
 export class AliexpressService {
     private readonly logger = new Logger(AliexpressService.name);
+    private readonly oauthClient: AliExpressOAuth;
     private readonly appKey: string;
-    private readonly appSecret: string;
     private readonly callbackUrl: string;
     private readonly apiUrl: string;
 
@@ -17,14 +15,23 @@ export class AliexpressService {
         private readonly configService: ConfigService,
         private readonly prisma: PrismaService,
     ) {
-        this.appKey = this.configService.get<string>('ALIEXPRESS_APP_KEY') || '';
-        this.appSecret = this.configService.get<string>('ALIEXPRESS_APP_SECRET') || '';
-        this.callbackUrl = this.configService.get<string>('ALIEXPRESS_CALLBACK_URL') || '';
-        this.apiUrl = this.configService.get<string>('ALIEXPRESS_API_URL') || '';
+        this.appKey = this.configService.get<string>('ALIEXPRESS_APP_KEY') ?? '';
+        const appSecret = this.configService.get<string>('ALIEXPRESS_APP_SECRET') ?? '';
+        this.callbackUrl = this.configService.get<string>('ALIEXPRESS_CALLBACK_URL') ?? '';
+        this.apiUrl = this.configService.get<string>('ALIEXPRESS_API_URL') ?? '';
+
+        // Initialize manual OAuth client
+        this.oauthClient = new AliExpressOAuth({
+            appKey: this.appKey,
+            appSecret: appSecret,
+            apiUrl: this.apiUrl,
+        });
+
+        this.logger.log('✅ AliExpress service initialized with manual OAuth client');
     }
 
     /**
-     * Generate the authorization URL to redirect users for OAuth
+     * Generate AliExpress authorization URL
      */
     getAuthorizationUrl(): string {
         const params = new URLSearchParams({
@@ -38,131 +45,120 @@ export class AliexpressService {
     }
 
     /**
-     * Exchange authorization code for access token
+     * Handle OAuth callback - Exchange code for tokens
      */
-    async handleCallback(code: string): Promise<TokenResponseDto> {
-        this.logger.log(`Exchanging authorization code for access token`);
-
-        // Common parameters
-        const timestamp = Date.now().toString();
-        const params: Record<string, string> = {
-            app_key: this.appKey,
-            timestamp,
-            sign_method: 'sha256',
-            code, // Business parameter
-            grant_type: 'authorization_code', // Required
-            sp: 'ae', // Required for AliExpress
-        };
-
-        // Generate signature
-        const apiMethod = '/auth/token/create';
-        const signature = this.generateSignature(params, apiMethod);
-        params.sign = signature;
-
-        // Make HTTP request
-        const url = `${this.apiUrl}${apiMethod}`;
-        this.logger.debug(`GET ${url}`);
-        this.logger.debug(`Params: ${JSON.stringify(params)}`);
+    async handleCallback(code: string) {
+        this.logger.log(`Exchanging code for access token`);
+        this.logger.log(`Code: ${code}`);
 
         try {
-            // AliExpress requires GET request with parameters in URL
-            const response = await axios.get(url, {
-                params,
+            // Use manual OAuth client to generate token
+            const tokenData = await this.oauthClient.generateToken(code);
+
+            this.logger.log('✅ Token generated successfully');
+            this.logger.log(`User ID: ${tokenData.user_id}`);
+            this.logger.log(`User Nick: ${tokenData.user_nick}`);
+
+            // Save to database
+            await this.saveToken({
+                accessToken: tokenData.access_token,
+                refreshToken: tokenData.refresh_token,
+                expiresIn: tokenData.expires_in,
             });
 
-            this.logger.log('Token exchange successful');
-            this.logger.log(`Response: ${JSON.stringify(response.data)}`);
-            const tokenData: TokenResponseDto = response.data;
-
-            // Save token to database
-            await this.saveToken(tokenData);
-
-            return tokenData;
+            return {
+                user_id: tokenData.user_id,
+                user_nick: tokenData.user_nick,
+                expires_in: tokenData.expires_in,
+            };
         } catch (error: any) {
-            this.logger.error('Token exchange failed');
-            this.logger.error(`Status: ${error.response?.status}`);
-            this.logger.error(`URL: ${url}`);
-            this.logger.error(`Params: ${JSON.stringify(params)}`);
-            this.logger.error(`Response data: ${JSON.stringify(error.response?.data)}`);
-            this.logger.error(`Error message: ${error.message}`);
+            this.logger.error('Token generation failed', error);
             throw error;
         }
     }
 
     /**
-     * Generate HMAC-SHA256 signature for API calls
-     * Following AliExpress signature algorithm specification
+     * Refresh access token
      */
-    private generateSignature(params: Record<string, string>, apiMethod: string): string {
-        // Sort parameters alphabetically
-        const sortedKeys = Object.keys(params).sort();
+    async refreshAccessToken(refreshToken: string) {
+        this.logger.log('Refreshing access token');
 
-        // Concatenate: apiMethod + key1value1key2value2...
-        let signString = apiMethod;
-        for (const key of sortedKeys) {
-            signString += key + params[key];
+        try {
+            const tokenData = await this.oauthClient.refreshToken(refreshToken);
+
+            this.logger.log('✅ Token refreshed successfully');
+
+            // Update in database
+            await this.saveToken({
+                accessToken: tokenData.access_token,
+                refreshToken: tokenData.refresh_token,
+                expiresIn: tokenData.expires_in,
+            });
+
+            return tokenData;
+        } catch (error: any) {
+            this.logger.error('Token refresh failed', error);
+            throw error;
         }
-
-        this.logger.debug(`Sign string: ${signString}`);
-
-        // Generate HMAC-SHA256
-        const hmac = createHmac('sha256', this.appSecret);
-        hmac.update(signString, 'utf8');
-
-        // Convert to uppercase hex
-        const signature = hmac.digest('hex').toUpperCase();
-        this.logger.debug(`Signature: ${signature}`);
-
-        return signature;
     }
 
     /**
      * Save token to database
      */
-    private async saveToken(tokenData: TokenResponseDto): Promise<void> {
-        const expiresAt = tokenData.expires_in
-            ? new Date(Date.now() + tokenData.expires_in * 1000)
+    private async saveToken(data: {
+        accessToken: string;
+        refreshToken?: string;
+        expiresIn?: number;
+    }) {
+        const expiresAt = data.expiresIn
+            ? new Date(Date.now() + data.expiresIn * 1000)
             : null;
 
-        // Delete existing tokens (for now, single token support)
-        await this.prisma.aliexpressToken.deleteMany({});
-
-        // Create new token
-        await this.prisma.aliexpressToken.create({
-            data: {
-                accessToken: tokenData.access_token,
-                refreshToken: tokenData.refresh_token || null,
-                expiresAt: expiresAt || null,
-            },
+        const existing = await this.prisma.aliexpressToken.findFirst({
+            where: { userId: null },
         });
 
-        this.logger.log('Token saved to database');
+        if (existing) {
+            await this.prisma.aliexpressToken.update({
+                where: { id: existing.id },
+                data: {
+                    accessToken: data.accessToken,
+                    refreshToken: data.refreshToken ?? null,
+                    expiresAt,
+                },
+            });
+            this.logger.log('Token updated in database');
+        } else {
+            await this.prisma.aliexpressToken.create({
+                data: {
+                    userId: null,
+                    accessToken: data.accessToken,
+                    refreshToken: data.refreshToken ?? null,
+                    expiresAt,
+                },
+            });
+            this.logger.log('Token saved to database');
+        }
     }
 
     /**
-     * Get valid token from database
+     * Get valid token
      */
     async getValidToken(): Promise<string | null> {
         const token = await this.prisma.aliexpressToken.findFirst({
             where: {
-                OR: [
-                    { expiresAt: null },
-                    { expiresAt: { gt: new Date() } },
-                ],
-            },
-            orderBy: {
-                createdAt: 'desc',
+                expiresAt: { gt: new Date() },
             },
         });
 
-        return token?.accessToken || null;
+        return token?.accessToken ?? null;
     }
 
     /**
-     * Check if AliExpress is connected (has valid token)
+     * Check if connected
      */
     async isConnected(): Promise<boolean> {
         const token = await this.getValidToken();
-        return !!token;
+        return token !== null;
     }
 }

@@ -33,6 +33,7 @@
     "@nestjs/swagger": "^11.2.1",
     "@prisma/client": "^6.18.0",
     "@types/bcrypt": "^6.0.0",
+    "ae_sdk": "^0.6.0",
     "axios": "^1.13.2",
     "bcrypt": "^6.0.0",
     "class-transformer": "^0.5.1",

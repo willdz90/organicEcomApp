@@ -1,12 +1,13 @@
 import { Module } from '@nestjs/common';
-import { PrismaModule } from '../database/prisma.module';
-import { AliexpressService } from './aliexpress.service';
+import { ConfigModule } from '@nestjs/config';
 import { AliexpressController } from './aliexpress.controller';
+import { AliexpressService } from './aliexpress.service';
+import { PrismaModule } from '../database/prisma.module';
 
 @Module({
-    imports: [PrismaModule],
-    providers: [AliexpressService],
+    imports: [ConfigModule, PrismaModule],
     controllers: [AliexpressController],
+    providers: [AliexpressService],
     exports: [AliexpressService],
 })
 export class AliexpressModule { }
