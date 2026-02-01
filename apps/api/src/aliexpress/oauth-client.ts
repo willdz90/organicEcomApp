@@ -61,11 +61,11 @@ export class AliExpressOAuth {
 
         console.log('\n🌐 Complete Request Details:');
         console.log('   URL:', url);
-        console.log('   Method: POST');
+        console.log('   Method: GET (OAuth endpoints require GET)');
         console.log('   Headers: (default fetch headers)');
 
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',  // ✅ Changed from POST to GET
         });
 
         console.log('\n📨 Response received:');
@@ -121,7 +121,7 @@ export class AliExpressOAuth {
         console.log('🌐 URL:', url);
 
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',  // ✅ Changed from POST to GET
         });
 
         console.log('📨 Status:', response.status);
