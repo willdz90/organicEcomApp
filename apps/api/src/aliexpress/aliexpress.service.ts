@@ -48,16 +48,22 @@ export class AliexpressService {
      * Handle OAuth callback - Exchange code for tokens
      */
     async handleCallback(code: string) {
-        this.logger.log(`Exchanging code for access token`);
-        this.logger.log(`Code: ${code}`);
+        this.logger.log('='.repeat(60));
+        this.logger.log('📞 CALLBACK HANDLER STARTED');
+        this.logger.log(`📥 Authorization Code: ${code}`);
+        this.logger.log('='.repeat(60));
 
         try {
             // Use manual OAuth client to generate token
+            this.logger.log('🔄 Calling OAuth client generateToken()...');
             const tokenData = await this.oauthClient.generateToken(code);
 
-            this.logger.log('✅ Token generated successfully');
-            this.logger.log(`User ID: ${tokenData.user_id}`);
-            this.logger.log(`User Nick: ${tokenData.user_nick}`);
+            this.logger.log('='.repeat(60));
+            this.logger.log('✅ TOKEN GENERATED SUCCESSFULLY');
+            this.logger.log(`👤 User ID: ${tokenData.user_id}`);
+            this.logger.log(`🏷️  User Nick: ${tokenData.user_nick}`);
+            this.logger.log(`⏰ Expires In: ${tokenData.expires_in}s`);
+            this.logger.log('='.repeat(60));
 
             // Save to database
             await this.saveToken({
@@ -72,7 +78,11 @@ export class AliexpressService {
                 expires_in: tokenData.expires_in,
             };
         } catch (error: any) {
-            this.logger.error('Token generation failed', error);
+            this.logger.error('='.repeat(60));
+            this.logger.error('❌ TOKEN GENERATION FAILED');
+            this.logger.error(`Error: ${error.message}`);
+            this.logger.error(`Stack: ${error.stack}`);
+            this.logger.error('='.repeat(60));
             throw error;
         }
     }
