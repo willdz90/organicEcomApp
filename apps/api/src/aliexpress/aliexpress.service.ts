@@ -54,6 +54,15 @@ export class AliexpressService {
         this.logger.log('='.repeat(60));
 
         try {
+            // Check Public IP
+            try {
+                const ipRes = await fetch('https://api.ipify.org?format=json');
+                const ipData = await ipRes.json();
+                this.logger.log(`🌍 CURRENT SERVER PUBLIC IP: ${ipData.ip}`);
+            } catch (e) {
+                this.logger.warn('Could not fetch public IP');
+            }
+
             // Use manual OAuth client to generate token
             this.logger.log('🔄 Calling OAuth client generateToken()...');
             const tokenData = await this.oauthClient.generateToken(code);
