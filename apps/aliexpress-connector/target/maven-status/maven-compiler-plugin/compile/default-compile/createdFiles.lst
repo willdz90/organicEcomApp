@@ -1,0 +1,7 @@
+com\global\iop\client\IopClient.class
+com\global\iop\client\IopClientImpl.class
+com\global\iop\client\IopRequest.class
+com\organicecom\aliexpress\AliexpressConnectorApplication.class
+com\global\iop\client\IopResponse.class
+com\organicecom\aliexpress\controller\AuthController.class
+com\organicecom\aliexpress\service\AliExpressService.class

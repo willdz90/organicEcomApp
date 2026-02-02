@@ -9,7 +9,6 @@ import { AnalyticsModule } from './analytics/analytics.module';
 import { CategoriesModule } from './categories/categories.module';
 import { AliexpressModule } from './aliexpress/aliexpress.module';
 
-
 @Module({
   imports: [
     ConfigModule.forRoot({

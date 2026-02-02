@@ -1,66 +1,46 @@
-import { Controller, Get, Query, Res, Logger } from '@nestjs/common';
-import type { Response } from 'express';
+import { Controller, Get, Post, Body, Query, Res, HttpException, HttpStatus } from '@nestjs/common';
 import { AliexpressService } from './aliexpress.service';
+import type { Response } from 'express';
 
 @Controller('aliexpress')
 export class AliexpressController {
-    private readonly logger = new Logger(AliexpressController.name);
-
     constructor(private readonly aliexpressService: AliexpressService) { }
 
-    /**
-     * Redirect user to AliExpress authorization page
-     * GET /api/aliexpress/auth
-     */
-    @Get('auth')
-    authorize(@Res() res: Response) {
-        const authUrl = this.aliexpressService.getAuthorizationUrl();
-        this.logger.log(`Redirecting to AliExpress: ${authUrl}`);
-        return res.redirect(authUrl);
+    @Get('auth/url')
+    async getAuthUrl() {
+        const url = await this.aliexpressService.getAuthUrl();
+        return { url };
     }
 
-    /**
-     * Handle OAuth callback from AliExpress
-     * GET /api/aliexpress/callback?code=xxx
-     */
     @Get('callback')
     async callback(@Query('code') code: string, @Res() res: Response) {
-        this.logger.log(`OAuth callback received`);
-
         if (!code) {
-            return res.status(400).json({
-                success: false,
-                message: 'Missing authorization code',
-            });
+            return res.status(400).json({ message: 'No code provided' });
         }
 
         try {
-            const result = await this.aliexpressService.handleCallback(code);
+            // 1. Exchange code for token via Java Service
+            const tokenData = await this.aliexpressService.exchangeToken(code);
 
+            // 2. TODO: Save tokenData to User/Database
+            console.log('Token received:', tokenData);
+
+            // 3. Redirect back to frontend or show success
+            // For now, return JSON
             return res.json({
-                success: true,
-                message: 'AliExpress connected successfully',
-                data: result,
+                message: 'Authentication successful',
+                data: tokenData
             });
-        } catch (error: any) {
-            this.logger.error('Callback failed', error);
-            return res.status(500).json({
-                success: false,
-                message: 'Failed to connect AliExpress',
-                error: error.message,
-            });
+        } catch (error) {
+            return res.status(500).json({ message: 'Authentication failed', error: (error as any).message });
         }
     }
-
-    /**
-     * Check AliExpress connection status
-     * GET /api/aliexpress/status
-     */
-    @Get('status')
-    async status() {
-        const isConnected = await this.aliexpressService.isConnected();
-        return {
-            connected: isConnected,
-        };
+    @Post('refresh')
+    async refresh(@Body('refresh_token') refreshToken: string) {
+        if (!refreshToken) {
+            throw new HttpException('refresh_token is required', HttpStatus.BAD_REQUEST);
+        }
+        const tokenData = await this.aliexpressService.refreshToken(refreshToken);
+        return { message: 'Token refreshed', data: tokenData };
     }
 }
